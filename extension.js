@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -67,6 +69,23 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
             this.connect('clicked', () => this._onClicked());
 
             this._onConfigsChanged();
+
+            this._addKeyBinding('shortcut-next', () => {
+                this._cycleConfig(true);
+            });
+            this._addKeyBinding('shortcut-previous', () => {
+                this._cycleConfig(false);
+            });
+        }
+
+        _addKeyBinding(key, handler) {
+            Main.wm.addKeybinding(
+                key,
+                this._settings,
+                Meta.KeyBindingFlags.NONE,
+                Shell.ActionMode.NORMAL,
+                handler
+            );
         }
 
         destroy() {
@@ -75,6 +94,9 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
             if (this._dialogHandlerId) {
                 this._nameDialog.disconnect(this._dialogHandlerId);
             }
+
+            Main.wm.removeKeybinding('shortcut-next');
+            Main.wm.removeKeybinding('shortcut-previous');
 
             super.destroy();
         }
@@ -188,6 +210,9 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
         }
 
         _onClicked() {
+            this._cycleConfig(true);
+        }
+        _cycleConfig(forward) {
             const nConfigs = this._currentConfigs.length;
             if (nConfigs === 0) {
                 return;
@@ -199,7 +224,14 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
             }
 
             const currentIndex = this._currentConfigs.indexOf(this._activeConfig);
-            const newIndex = currentIndex === (nConfigs - 1) ? 0 : currentIndex + 1;
+            let newIndex;
+            
+            if (forward) {
+                newIndex = currentIndex === (nConfigs - 1) ? 0 : currentIndex + 1;
+            } else {
+                newIndex = currentIndex === 0 ? nConfigs - 1 : currentIndex - 1;
+            }
+
             this._onConfig(this._currentConfigs[newIndex]);
         }
 
