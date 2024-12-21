@@ -21,10 +21,7 @@ import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 
-import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
-
-const MAX_NAME_LENGTH = 15;
 
 export const NameDialog = GObject.registerClass(
 class NameDialog extends ModalDialog.ModalDialog {
@@ -49,7 +46,6 @@ class NameDialog extends ModalDialog.ModalDialog {
 
         this._message = new St.Label();
         this._entry = new St.Entry();
-        this._entry.clutter_text.set_max_length(MAX_NAME_LENGTH);
         this._entry.clutter_text.connect('activate', () => {
             this._valid = true;
             this.close();
