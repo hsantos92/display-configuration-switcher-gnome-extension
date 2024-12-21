@@ -18,11 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio'
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+import { PrefsWidgets } from './prefs_widgets.js';
 
 const NAME_INDEX = 0;
 const HASH_INDEX = 1;
@@ -30,74 +33,137 @@ const LOGICAL_MONITORS_INDEX = 2;
 const PROPERTIES_INDEX = 3;
 const PHYSICAL_DISPLAYS_INDEX = 4;
 
-export default class DisplayConfigSwitcherPreferences extends ExtensionPreferences {
+export default class DisplayConfigSwitcherPreferences extends ExtensionPreferences
+{
+    /**
+     * Gtk.Builder object associated with the extension
+     * 
+     * @type {?Gtk.Builder}
+     */
+    #builder = null;
+    
+    /**
+     * List of saved display configurations
+     *
+     * @type {Array}
+     */
+    #configs = [];
+
+    /**
+     * Gio.Resource object associated with the extension
+     * 
+     * @type {?Gio.Resource}
+     */
+    #resource = null;
+
+    /**
+     * Root widget of the preferences window
+     *
+     * @type {?Gtk.Root}
+     */ 
+    #root = null;
+
+    /**
+     * Gio.Settings object associated with the extension
+     *
+     * @type {?Settings}
+     */
+    #settings = null;
+
     fillPreferencesWindow(window) {
-        // Create a preferences page, with a single group
-        this._configs = [];
-        this._settings = this.getSettings();
+        this.#settings = this.getSettings();
+        this.#root = window.get_root();
 
-        const page = new Adw.PreferencesPage({
-            title: _('General'),
-            icon_name: 'dialog-information-symbolic',
-        });
-        window.add(page);
+        // Load and register gresources
+        this.#resource = Gio.Resource.load(`${this.path}/resources.gresource`);
+        Gio.resources_register(this.#resource);
 
-        const configGroup = new Adw.PreferencesGroup({
-            title: _('Saved Configurations'),
-            description: _('Rename or remove the saved display configurations.'),
-        });
-        page.add(configGroup);
+        // Initialize preferences widgets now that gresource is loaded
+        PrefsWidgets.initialize();
 
-        this._configListBox = new Gtk.ListBox();
-        this._configListBox.add_css_class("boxed-list");
-        configGroup.add(this._configListBox);
+        // Load builder instance
+        this.#builder = new Gtk.Builder();
+        this.#builder.add_from_resource(
+            `/org/gnome/Shell/Extensions/display-configuration-switcher/ui/preferences_pages.ui`
+        );
+        
+        // Add the Config Page
+        const configPage = this.#builder.get_object('configPage');
+        window.add(configPage);
+
+        // Add the Shortcut Page
+        const shortcutPage = this.#builder.get_object('shortcutPage');
+        window.add(shortcutPage);
+
+        // Create the Shortcut Page
+        const shortcutListBox = this.#builder.get_object('shortcutListBox');
+        const shortcutRowNext = PrefsWidgets.createShortcutRow(
+            _('Switch to next available display configuration'),
+            'display-configuration-switcher-shortcut-next', 
+            this.getSettings()
+        );
+        shortcutListBox.append(shortcutRowNext);
+        const shortcutRowPrevious = PrefsWidgets.createShortcutRow(
+            _('Switch to previous available display configuration'),
+            'display-configuration-switcher-shortcut-previous',
+            this.getSettings()
+        )
+        shortcutListBox.append(shortcutRowPrevious);
 
         // Drag and Drop: Drop Handling
         const dropTarget = Gtk.DropTarget.new(GObject.TYPE_INT, Gdk.DragAction.MOVE);
-        this._configListBox.add_controller(dropTarget);
+        const configListBox =  this.#builder.get_object('configListbox');
+        configListBox.add_controller(dropTarget);
 
         dropTarget.connect("drop", (_drop, value, _x, y) => {
-            const targetRow = this._configListBox.get_row_at_y(y);
-            if (!targetRow || value > this._configs.length - 1) {
+            const targetRow = configListBox.get_row_at_y(y);
+            if (!targetRow || value > this.#configs.length - 1) {
                 return false;
             }
             const targetIndex = targetRow.get_index();
             const sourceIndex = value;
 
-            const sourceConfig = this._configs.splice(sourceIndex, 1)[0];
+            const sourceConfig = this.#configs.splice(sourceIndex, 1)[0];
 
-            this._configs.splice(targetIndex, 0, sourceConfig);
+            this.#configs.splice(targetIndex, 0, sourceConfig);
 
-            this._saveConfigs();
+            this.#saveConfigs();
 
             return true;
         })
 
+        // Connect handler for changed configs
+        this.#settings.connect('changed::configs', () => {
+            this.#onConfigsChanged();
+        });
+
+        // Call handler for initial fill of config list
+        this.#onConfigsChanged();
+
+        // Handle the close-request signal to drop all references
         window.connect('close-request', () => {
-            this._configs = null;
-            this._settings = null;
-            this._configListBox = null;
+            this.#builder = null;
+            this.#configs = null;
+            this.#resource = null;
+            this.#root = null;
+            this.#settings = null;
+
+            PrefsWidgets.clear();
         });
-
-        this._settings.connect('changed::configs', () => {
-            this.onConfigsChanged();
-        });
-
-        this.onConfigsChanged();
     }
 
-    onConfigsChanged() {
-        this._configs = this._settings.get_value('configs').deepUnpack();
+    #onConfigsChanged() {
+        this.#configs = this.#settings.get_value('configs').deepUnpack();
 
-        this._updateConfigGroup();
+        this.#updateConfigGroup();
     }
 
-    _saveConfigs() {
-        const configsVariant = new GLib.Variant('a(sua(iiduba(ssa{sv}))a{sv}a(ssss))', this._configs);
-        this._settings.set_value('configs', configsVariant);
+    #saveConfigs() {
+        const configsVariant = new GLib.Variant('a(sua(iiduba(ssa{sv}))a{sv}a(ssss))', this.#configs);
+        this.#settings.set_value('configs', configsVariant);
     }
 
-    _prettyPrintConfig(config) {
+    #prettyPrintConfig(config) {
         const hash = config[HASH_INDEX];
         const logicalMonitors = config[LOGICAL_MONITORS_INDEX];
         const properties = config[PROPERTIES_INDEX];
@@ -143,116 +209,36 @@ export default class DisplayConfigSwitcherPreferences extends ExtensionPreferenc
         return res;
     }
 
-    _updateConfigGroup() {
-        let row;
-        while ((row = this._configListBox.get_last_child()) !== null) {
-            this._configListBox.remove(row);
+    #updateConfigGroup() {
+        const configListBox =  this.#builder.get_object('configListbox');
+        for (let row; (row = configListBox.get_last_child()) !== null; ) {
+            configListBox.remove(row);
         }
 
-        for (const [index, config] of this._configs.entries()) {
-            const row = new Adw.EntryRow({
-                text: config[NAME_INDEX],
-                title: _('Configuration Name'),
-                show_apply_button: true,
-            });
-            row.connect('apply', () => { this.onEditApply(index); });
+        for (const [index, config] of this.#configs.entries()) {
+            const row = PrefsWidgets.createConfigRow({});
 
-            row.add_prefix(new Gtk.Image({
-                icon_name: "list-drag-handle-symbolic"
-            }));
+            row.text = config[NAME_INDEX];
+            row.title = _('Configuration Name');
+            row.infoLabel.label = this.#prettyPrintConfig(config);
 
-            const infoButton = new Gtk.MenuButton({
-                icon_name: 'dialog-information-symbolic',
-                valign: Gtk.Align.CENTER
-            });
+            row.connect('apply', () => { this.#onEditApply(index); });
+            row.connect('remove-clicked', () => { this.#onRemoveClicked(index); });
 
-            const infoPopover = new Gtk.Popover();
+            row.setupDragAndDrop(configListBox, index);
 
-            const infoLabel = new Gtk.Label({
-                label: this._prettyPrintConfig(config)
-            });
-
-            infoPopover.set_child(infoLabel);
-            infoButton.set_popover(infoPopover);
-
-            row.add_suffix(infoButton);
-
-            const removeButton = new Gtk.Button({
-                icon_name: 'list-remove-symbolic',
-                valign: Gtk.Align.CENTER
-            });
-
-            removeButton.connect('clicked', () => { this.onRemoveClicked(index); });
-            removeButton.add_css_class('destructive-action');
-
-            row.add_suffix(removeButton);
-
-            // Implement Drag and Drop
-            const dropController = new Gtk.DropControllerMotion();
-            const dragSource = new Gtk.DragSource({
-                actions: Gdk.DragAction.MOVE,
-            });
-            row.add_controller(dragSource);
-            row.add_controller(dropController);
-
-            let dragX;
-            let dragY;
-
-            dragSource.connect("prepare", (_source, x, y) => {
-                dragX = x;
-                dragY = y;
-
-                const value = new GObject.Value();
-                value.init(GObject.TYPE_INT);
-                value.set_int(index);
-
-                return Gdk.ContentProvider.new_for_value(value);
-            });
-
-            dragSource.connect("drag-begin", (_source, drag) => {
-                const dragWidget = new Gtk.ListBox();
-
-                dragWidget.set_size_request(row.get_width(), row.get_height());
-                dragWidget.add_css_class("boxed-list");
-
-                const dragRow = new Adw.EntryRow({
-                    text: config[NAME_INDEX],
-                    title: _('Configuration Name'),
-                    show_apply_button: true,
-                });
-                dragRow.add_prefix(new Gtk.Image({
-                    icon_name: "list-drag-handle-symbolic"
-                }));
-
-                dragWidget.append(dragRow);
-                dragWidget.drag_highlight_row(dragRow);
-
-                const icon = Gtk.DragIcon.get_for_drag(drag);
-                icon.child = dragWidget;
-
-                drag.set_hotspot(dragX, dragY);
-            });
-
-            dropController.connect("enter", () => {
-                this._configListBox.drag_highlight_row(row);
-            });
-
-            dropController.connect("leave", () => {
-                this._configListBox.drag_unhighlight_row();
-            });
-
-
-            this._configListBox.append(row);
+            configListBox.append(row);
         }
     }
 
-    onEditApply(index) {
-        this._configs[index][NAME_INDEX] = this._configListBox.get_row_at_index(index).get_text();
-        this._saveConfigs();
+    #onEditApply(index) {
+        const configListBox =  this.#builder.get_object('configListbox');
+        this.#configs[index][NAME_INDEX] = configListBox.get_row_at_index(index).get_text();
+        this.#saveConfigs();
     }
 
-    onRemoveClicked(index) {
-        this._configs.splice(index, 1);
-        this._saveConfigs();
+    #onRemoveClicked(index) {
+        this.#configs.splice(index, 1);
+        this.#saveConfigs();
     }
 }

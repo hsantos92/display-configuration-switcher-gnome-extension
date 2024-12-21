@@ -16,7 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SOURCES="dbus.js dialog.js extension.js prefs.js"
+SOURCES="
+    dbus.js
+    dialog.js
+    extension.js
+    prefs.js
+    prefs_widgets.js
+    
+    data/resources.gresource
+    "
+
+BLUEPRINT_FILES="
+    data/ui/config_row.blp
+    data/ui/config_row_drag_widget.blp
+    data/ui/preferences_pages.blp
+    data/ui/shortcut_dialog.blp
+    data/ui/shortcut_row.blp
+    "
 
 function Help()
 {
@@ -46,6 +62,12 @@ done
 
 
 if [[ $build ]]; then
+    # Compile blueprint files to xml
+    blueprint-compiler batch-compile ./data ./data $BLUEPRINT_FILES
+
+    # Compile the resources
+    glib-compile-resources --sourcedir data/ data/resources.gresource.xml
+    
     EXTRA_SOURCES=""
     for SCRIPT in ${SOURCES}; do
         EXTRA_SOURCES="${EXTRA_SOURCES} --extra-source=${SCRIPT}"

@@ -14,7 +14,12 @@
       ];
 
       buildInputs = with pkgs; [
+        libadwaita
+        blueprint-compiler
         gobject-introspection
+        glib
+        gtk4
+        libxml2
       ];
     };
   };

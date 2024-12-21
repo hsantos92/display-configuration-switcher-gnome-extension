@@ -1,0 +1,29 @@
+using Gtk 4.0;
+
+using Adw 1;
+
+template $ConfigRow : Adw.EntryRow {
+    [prefix]
+    Image {
+        icon-name: "list-drag-handle-symbolic";
+    }
+
+    [suffix]
+    MenuButton {
+        icon-name: "dialog-information-symbolic";
+        valign: center;
+        popover: Popover {
+            Label infoLabel {}
+        };
+    }
+
+    [suffix]
+    Button removeButton {
+        icon-name: "list-remove-symbolic";
+        valign: center;
+
+        styles ["destructive-action"]
+
+        clicked => $_onRemoveButtonClicked();
+    }
+}
