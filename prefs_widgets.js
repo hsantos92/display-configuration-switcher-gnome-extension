@@ -114,7 +114,7 @@ export class PrefsWidgets {
                 });
     
                 dropController.connect("enter", () => {
-                    list.drag_highlight_row(row);
+                    list.drag_highlight_row(this);
                 });
     
                 dropController.connect("leave", () => {
