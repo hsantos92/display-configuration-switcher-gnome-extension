@@ -1,5 +1,9 @@
 # Display Configuration Switcher (GNOME Extension)
 
+<div>
+    <img style="margin: 0px auto 0px; display: block;" src="./data/icon/com.gitlab.knokelmaat.display-configuration-switcher.svg" width="256" height="256"/>
+</div>
+
 ## Description
 Quickly change the display configuration from the system menu.
 
