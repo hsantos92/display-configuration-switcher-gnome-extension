@@ -8,5 +8,5 @@
     ],
     "url": "https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension",
     "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher",
-    "version": 7
+    "version": 8
 }
