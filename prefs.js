@@ -220,6 +220,7 @@ export default class DisplayConfigSwitcherPreferences extends ExtensionPreferenc
 
             row.text = config[NAME_INDEX];
             row.title = this.#printPhysicalDisplays(config);
+            row.tooltip_text = row.title;
             row.infoLabel.label = this.#prettyPrintConfig(config);
 
             row.connect('apply', () => { this.#onEditApply(index); });

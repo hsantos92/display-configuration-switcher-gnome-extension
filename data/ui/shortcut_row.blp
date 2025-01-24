@@ -11,6 +11,7 @@ template $ShortcutRow : Adw.ActionRow {
     [suffix]
     Button {
         icon-name: "document-edit-symbolic";
+        tooltip-text: _("Edit");
         valign: center;
 
         clicked => $_onEditButtonClicked();

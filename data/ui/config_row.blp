@@ -11,6 +11,7 @@ template $ConfigRow : Adw.EntryRow {
     [suffix]
     MenuButton {
         icon-name: "dialog-information-symbolic";
+        tooltip-text: _("Debug Info");
         valign: center;
         popover: Popover {
             Label infoLabel {
@@ -22,6 +23,7 @@ template $ConfigRow : Adw.EntryRow {
     [suffix]
     Button removeButton {
         icon-name: "list-remove-symbolic";
+        tooltip-text: _("Remove Configuration");
         valign: center;
 
         styles ["destructive-action"]
