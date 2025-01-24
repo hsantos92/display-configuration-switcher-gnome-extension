@@ -219,7 +219,7 @@ export default class DisplayConfigSwitcherPreferences extends ExtensionPreferenc
             const row = PrefsWidgets.createConfigRow({});
 
             row.text = config[NAME_INDEX];
-            row.title = _('Configuration Name');
+            row.title = this.#printPhysicalDisplays(config);
             row.infoLabel.label = this.#prettyPrintConfig(config);
 
             row.connect('apply', () => { this.#onEditApply(index); });
@@ -229,6 +229,16 @@ export default class DisplayConfigSwitcherPreferences extends ExtensionPreferenc
 
             configListBox.append(row);
         }
+    }
+
+    #printPhysicalDisplays(config) {
+        const physicalDisplays = config[PHYSICAL_DISPLAYS_INDEX];
+        let res = [];
+
+        for (const display of physicalDisplays) {
+            res.push(`${display[2]} (${display[0]})`);
+        }
+        return _('Displays: ') + res.join(', ');
     }
 
     #onEditApply(index) {
