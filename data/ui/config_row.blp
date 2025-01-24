@@ -13,7 +13,9 @@ template $ConfigRow : Adw.EntryRow {
         icon-name: "dialog-information-symbolic";
         valign: center;
         popover: Popover {
-            Label infoLabel {}
+            Label infoLabel {
+                selectable: true;
+            }
         };
     }
 
