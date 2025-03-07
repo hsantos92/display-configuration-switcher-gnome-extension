@@ -13,9 +13,14 @@ template $ConfigRow : Adw.EntryRow {
         icon-name: "dialog-information-symbolic";
         tooltip-text: _("Debug Info");
         valign: center;
+        direction: left;
         popover: Popover {
-            Label infoLabel {
-                selectable: true;
+            ScrolledWindow {
+                propagate-natural-height: true;
+                propagate-natural-width: true;
+                Label infoLabel {
+                    selectable: true;
+                }
             }
         };
     }
