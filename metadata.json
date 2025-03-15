@@ -4,9 +4,10 @@
     "description": "Quickly change the display configuration from the system menu. Multiple display configurations can be saved with custom names. A display configuration contains all display settings: resolution, scaling, orientation, position...",
     "shell-version": [ 
         "46",
-        "47"
+        "47",
+        "48",
     ],
     "url": "https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension",
     "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher",
-    "version": 8
+    "version": 9
 }
