@@ -1,3 +1,5 @@
+*.envrc
+*.direnv
 *.gresource
 *.ui
 *.zip
