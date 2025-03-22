@@ -25,19 +25,19 @@ export class PrefsWidgets {
     /**
      * Row widget class for displaying and editing configuration in the preferences window
      * 
-     * @type {?function}
+     * @type {?class}
      */
     static #ConfigRow = null;
     /**
      * Drag widget class to display when dragging a ConfigRow
      * 
-     * @type {?function}
+     * @type {?class}
      */
     static #ConfigRowDragWidget = null;
     /**
      * Dialog class for modifying a keyboard shortcut
      * 
-     * @type {?function}
+     * @type {?class}
      */
     static #ShortcutDialog = null;
     /**
@@ -49,7 +49,7 @@ export class PrefsWidgets {
     /**
      * Row widget class for displaying and modifying keyboard shortcut
      * 
-     * @type {?function} 
+     * @type {?class} 
      */
     static #ShortcutRow = null;
 
