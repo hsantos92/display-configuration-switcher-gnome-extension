@@ -20,6 +20,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 
+import { ConfigIndex, updateConfigHash } from './config.js'
+
 export const DisplayConfigSwitcher = GObject.registerClass({
     Signals: {
         'state-changed': {},
@@ -66,9 +68,9 @@ export const DisplayConfigSwitcher = GObject.registerClass({
     getMonitorsConfig() {
         if (this._currentState === null) { return null; }
 
-        const config = {};
+        const config = Array(5).fill(null);
 
-        config.properties = {};
+        config[ConfigIndex.PROPERTIES] = {};
         const properties = this._currentState[3];
 
 
@@ -76,22 +78,16 @@ export const DisplayConfigSwitcher = GObject.registerClass({
             const layoutMode = properties["layout-mode"];
             if (layoutMode !== undefined) {
                 // Immediately save a{sv} values as GVariant for easy packing later
-                config.properties["layout-mode"] = GLib.Variant.new_uint32(layoutMode);
+                config[ConfigIndex.PROPERTIES]["layout-mode"] = GLib.Variant.new_uint32(layoutMode);
             }
         }
 
-        config.logicalMonitors = this._getUpdatedLogicalMonitors();
+        config[ConfigIndex.LOGICAL_MONITORS] = this._getUpdatedLogicalMonitors();
 
         const physicalDisplays = this.getPhysicalDisplayInfo();
-        config.physicalDisplays = physicalDisplays.map(v => v.id);
+        config[ConfigIndex.PHYSICAL_DISPLAYS] = physicalDisplays.map(v => v.id);
 
-        // Use GVariant string representation for generating hash
-        const tempVariant = new GLib.Variant('(a(iiduba(ssa{sv}))a{sv}a(ssss))', [
-            config.logicalMonitors,
-            config.properties,
-            config.physicalDisplays
-        ]);
-        config.hash = (new GLib.String(tempVariant.print(false))).hash();
+        updateConfigHash(config);
 
         return config;
     }
@@ -151,6 +147,11 @@ export const DisplayConfigSwitcher = GObject.registerClass({
             if (enableUnderscanning !== undefined) {
                 // Immediately save a{sv} values as GVariant for easy packing later
                 display.props["underscanning"] = GLib.Variant.new_boolean(enableUnderscanning);
+            }
+            const colorMode = props["color-mode"];
+            if (colorMode !== undefined) {
+                display.props["color-mode"] = GLib.Variant.new_uint32(colorMode)
+                ;
             }
             for (let mode of modes) {
                 const [mode_id, , , , , , opt_props] = mode;

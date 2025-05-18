@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SOURCES="
+    config.js
     dbus.js
     dialog.js
     extension.js

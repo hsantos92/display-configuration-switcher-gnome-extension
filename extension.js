@@ -29,12 +29,9 @@ import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js'
 
 import { DisplayConfigSwitcher } from './dbus.js';
 import { NameDialog } from './dialog.js';
+import { ConfigIndex, updateConfigHash } from './config.js'
 
-const NAME_INDEX = 0;
-const HASH_INDEX = 1;
-const LOGICAL_MONITORS_INDEX = 2;
-const PROPERTIES_INDEX = 3;
-const PHYSICAL_DISPLAYS_INDEX = 4;
+
 
 const DisplayConfigQuickMenuToggle = GObject.registerClass(
     class DisplayConfigQuickMenuToggle extends QuickSettings.QuickMenuToggle {
@@ -103,6 +100,10 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
         _onConfigsChanged() {
             this._configs = this._settings.get_value('configs').deepUnpack();
+            for (let config of this._configs) {
+                updateConfigHash(config)
+            }
+
             this._updateMenu();
         }
 
@@ -117,7 +118,7 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
             this._filterConfigs();
             this._loadDefaultIfNeeded();
-            this._addConfigItems();
+            if (!this._addConfigItems()) { return; }
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -131,7 +132,7 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
             this._currentConfigs = [];
             for (let config of this._configs) {
-                const displays = config[PHYSICAL_DISPLAYS_INDEX];
+                const displays = config[ConfigIndex.PHYSICAL_DISPLAYS];
                 if (displays.every(display =>
                     activeDisplays.some(activeDisplay =>
                         activeDisplay.id.every((element, index) => element === display[index])
@@ -158,30 +159,62 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
             if (this._configs.length === 0) {
                 this._addDummyItem("No configurations saved for this display setup.");
-                return;
+                return true;
             }
 
             const currentConfig = this._displayConfigSwitcher.getMonitorsConfig();
 
-            if (currentConfig === null) { return; }
+            if (currentConfig === null) { return true; }
+
+            let currentConfigFound = false;
 
             for (let config of this._currentConfigs) {
-                const configItem = new PopupMenu.PopupMenuItem(config[NAME_INDEX]);
+                const configItem = new PopupMenu.PopupMenuItem(config[ConfigIndex.NAME]);
 
                 configItem.connect('activate', () => {
                     this._onConfig(config);
                 });
 
-                if (config[HASH_INDEX] === currentConfig.hash) {
+                if (config[ConfigIndex.HASH] === currentConfig[ConfigIndex.HASH]) {
                     configItem.setOrnament(PopupMenu.Ornament.CHECK);
-                    this.subtitle = config[NAME_INDEX];
+                    this.subtitle = config[ConfigIndex.NAME];
                     this.checked = true;
                     this._activeConfig = config;
                     this._saveLastConfigIndex(this._configs.indexOf(config));
+                    currentConfigFound = true;
                 }
 
                 this.menu.addMenuItem(configItem);
             }
+
+            // If no match was found, it could be because of the added color-mode property in GNOME 48
+            if (!currentConfigFound) {
+                // Remove color-mode property from current config
+                for (let logicalMonitor of currentConfig[ConfigIndex.LOGICAL_MONITORS]) {
+                    for (let monitor of logicalMonitor[5]) {
+                        let monitorProps = monitor[2];
+                        if (monitorProps !== undefined) { 
+                           delete monitorProps["color-mode"];
+                        }    
+                    }           
+                }
+                // Calculate hash again
+                updateConfigHash(currentConfig);
+                const oldHash = currentConfig[ConfigIndex.HASH];
+                
+                // See if we find a match now
+                for (const [index, config] of this._configs.entries()) {
+                    if (config[ConfigIndex.HASH] === oldHash) {
+                        // If a match is found, save the new version of the config (with color-mode parameter)
+                        const name = this._configs[index][ConfigIndex.NAME];
+                        this._configs[index] = this._displayConfigSwitcher.getMonitorsConfig();
+                        this._configs[index][ConfigIndex.NAME] = name; // Name gets overwritten to "" so put it back
+                        this._saveConfigs(); // TODO maybe fix this recursion (visible when doing upgrade)
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         _addModifyItems() {
@@ -236,7 +269,7 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
         }
 
         _onConfig(config) {
-            this._displayConfigSwitcher.applyMonitorsConfig(config[LOGICAL_MONITORS_INDEX], config[PROPERTIES_INDEX]);
+            this._displayConfigSwitcher.applyMonitorsConfig(config[ConfigIndex.LOGICAL_MONITORS], config[ConfigIndex.PROPERTIES]);
         }
 
         _onAddConfig() {
@@ -258,16 +291,10 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
                 return;
             }
 
-            const currentConfig = this._displayConfigSwitcher.getMonitorsConfig();
-            const currentConfigNamed = [
-                this._nameDialog.getName(),
-                currentConfig.hash,
-                currentConfig.logicalMonitors,
-                currentConfig.properties,
-                currentConfig.physicalDisplays,
-            ];
+            let currentConfig = this._displayConfigSwitcher.getMonitorsConfig();
+            currentConfig[ConfigIndex.NAME] = this._nameDialog.getName()
 
-            this._configs.push(currentConfigNamed);
+            this._configs.push(currentConfig);
             this._saveConfigs();
             this._updateMenu();
         }
