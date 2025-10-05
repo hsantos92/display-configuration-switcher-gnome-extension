@@ -24,6 +24,9 @@ Adw.PreferencesPage shortcutPage {
     Adw.PreferencesGroup {
         title: _("Shortcuts");
         description: _("Change keyboard shortcuts for switching display configurations.");
+        header-suffix: Switch shortcutSwitch {
+            valign: center;
+        };
 
         ListBox shortcutListBox {
             selection-mode: none;

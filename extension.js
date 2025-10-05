@@ -67,12 +67,25 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
             this._onConfigsChanged();
 
-            this._addKeyBinding('display-configuration-switcher-shortcut-next', () => {
-                this._cycleConfig(true);
+            this._settings.connect('changed::display-configuration-switcher-shortcuts-enabled', (settings, key) => {
+                this._updateKeyBindings();
             });
-            this._addKeyBinding('display-configuration-switcher-shortcut-previous', () => {
-                this._cycleConfig(false);
-            });
+
+            this._updateKeyBindings();
+        }
+
+        _updateKeyBindings() {
+            if (this._settings.get_boolean('display-configuration-switcher-shortcuts-enabled')) {
+                this._addKeyBinding('display-configuration-switcher-shortcut-next', () => {
+                    this._cycleConfig(true);
+                });
+                this._addKeyBinding('display-configuration-switcher-shortcut-previous', () => {
+                    this._cycleConfig(false);
+                });
+            } else {
+                Main.wm.removeKeybinding('display-configuration-switcher-shortcut-next');
+                Main.wm.removeKeybinding('display-configuration-switcher-shortcut-previous');
+            }         
         }
 
         _addKeyBinding(key, handler) {

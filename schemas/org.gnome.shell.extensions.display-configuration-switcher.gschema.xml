@@ -26,5 +26,9 @@
       <default>['&lt;shift&gt;&lt;ctl&gt;semicolon']</default>
       <summary>Shortcut to switch to previous available configuration.</summary>
     </key>
+    <key name="display-configuration-switcher-shortcuts-enabled" type="b">
+      <default>true</default>
+      <summary>Whether shortcuts should be enabled.</summary>
+    </key>
   </schema>
 </schemalist>

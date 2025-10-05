@@ -109,6 +109,25 @@ export default class DisplayConfigSwitcherPreferences extends ExtensionPreferenc
             this.getSettings()
         )
         shortcutListBox.append(shortcutRowPrevious);
+        const shortcutSwitch = this.#builder.get_object('shortcutSwitch');
+        this.getSettings().bind(
+            'display-configuration-switcher-shortcuts-enabled',
+            shortcutSwitch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        shortcutSwitch.bind_property(
+            'active',
+            shortcutRowNext,
+            'sensitive',
+            GObject.BindingFlags.SYNC_CREATE
+        )
+        shortcutSwitch.bind_property(
+            'active',
+            shortcutRowPrevious,
+            'sensitive',
+            GObject.BindingFlags.SYNC_CREATE
+        )
 
         // Drag and Drop: Drop Handling
         const dropTarget = Gtk.DropTarget.new(GObject.TYPE_INT, Gdk.DragAction.MOVE);
