@@ -64,23 +64,28 @@ done
 
 if [[ $build ]]; then
     # Compile blueprint files to xml
+    echo "Compiling blueprint files to xml..."
     blueprint-compiler batch-compile ./data ./data $BLUEPRINT_FILES
 
     # Compile the resources
+    echo "Compiling resources..."
     glib-compile-resources --sourcedir data/ data/resources.gresource.xml
     
     EXTRA_SOURCES=""
     for SCRIPT in ${SOURCES}; do
         EXTRA_SOURCES="${EXTRA_SOURCES} --extra-source=${SCRIPT}"
     done
-    
+
+    echo "Packing extension..."
     gnome-extensions pack --force $EXTRA_SOURCES
 fi
 
 if [[ $install ]]; then
+    echo "Installing extension..."
     gnome-extensions install --force *.zip
 fi
 
 if [[ $logout  ]]; then
+    echo "Quitting GNOME session..."
     gnome-session-quit --logout --no-prompt
 fi

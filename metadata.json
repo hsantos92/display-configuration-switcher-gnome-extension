@@ -6,9 +6,10 @@
         "46",
         "47",
         "48",
-        "49"
+        "49",
+        "50"
     ],
     "url": "https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension",
     "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher",
-    "version": 12
+    "version": 13
 }
