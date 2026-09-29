@@ -7,6 +7,22 @@
 ## Description
 Quickly change the display configuration from the system menu.
 
+## Startup behavior
+This fork preserves GNOME's current display layout when enabled, at login, and
+when monitors change. Saved profiles are applied only when selected from the
+menu or through the toggle/keyboard shortcuts. The upstream automatic restore
+of the last profile has been removed to avoid login flicker and unexpected
+orientation or scaling changes.
+
+Existing saved profiles remain available. This fork uses the same extension UUID
+as upstream, so installing it replaces the upstream copy. Updates from GNOME
+Extensions may replace this fork.
+
+Upstream: https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension
+
+## Validation
+Run `node --test tests/startup.test.cjs` and `bash build.sh -b`.
+
 ## Installation
 To build and install the extension, run:
 ```bash

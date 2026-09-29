@@ -21,7 +21,7 @@ import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
@@ -48,8 +48,6 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
 
             this._extension = extension;
             this._settings = this._extension.getSettings();
-            this._lastConfigIndex = this._settings.get_uint('last-config-index');
-            this._lastConfigLoaded = false;
             this._configsChangedHandler = this._settings.connect('changed::configs', () => {
                 this._onConfigsChanged();
             });
@@ -130,7 +128,7 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
             this.menu.removeAll();
 
             this._filterConfigs();
-            this._loadDefaultIfNeeded();
+            // Observe GNOME's layout; only explicit user actions apply a profile.
             if (!this._addConfigItems()) { return; }
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -153,16 +151,6 @@ const DisplayConfigQuickMenuToggle = GObject.registerClass(
                     this._currentConfigs.push(config);
                 }
             };
-        }
-
-        _loadDefaultIfNeeded() {
-            if (this._displayConfigSwitcher.hasState() && !this._lastConfigLoaded && this._currentConfigs.length > 0) {
-                this._lastConfigLoaded = true;
-                const lastConfig = this._configs.length > this._lastConfigIndex ? this._configs[this._lastConfigIndex] : null;
-                if (lastConfig !== null && (this._currentConfigs.indexOf(lastConfig) > -1)) {
-                    this._onConfig(lastConfig);
-                }
-            }
         }
 
         _addConfigItems() {

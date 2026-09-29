@@ -9,7 +9,7 @@
         "49",
         "50"
     ],
-    "url": "https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension",
+    "url": "https://github.com/hsantos92/display-configuration-switcher-gnome-extension",
     "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher",
     "version": 13
 }
