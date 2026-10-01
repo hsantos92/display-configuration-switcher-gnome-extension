@@ -1,8 +1,8 @@
 {
-    "uuid": "display-configuration-switcher@knokelmaat.gitlab.com",
-    "name": "Display Configuration Switcher",
+    "uuid": "display-configuration-switcher@hsantos92.github.io",
+    "name": "Display Configuration Switcher (Hector)",
     "description": "Quickly change the display configuration from the system menu. Multiple display configurations can be saved with custom names. A display configuration contains all display settings: resolution, scaling, orientation, position...",
-    "shell-version": [ 
+    "shell-version": [
         "46",
         "47",
         "48",
@@ -10,6 +10,6 @@
         "50"
     ],
     "url": "https://github.com/hsantos92/display-configuration-switcher-gnome-extension",
-    "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher",
-    "version": 13
+    "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher-hsantos92",
+    "version": 14
 }

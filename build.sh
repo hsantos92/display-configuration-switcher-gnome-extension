@@ -82,7 +82,7 @@ fi
 
 if [[ $install ]]; then
     echo "Installing extension..."
-    gnome-extensions install --force *.zip
+    gnome-extensions install --force display-configuration-switcher@hsantos92.github.io.shell-extension.zip
 fi
 
 if [[ $logout  ]]; then

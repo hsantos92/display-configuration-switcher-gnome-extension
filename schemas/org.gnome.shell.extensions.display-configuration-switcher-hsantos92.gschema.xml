@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema id="org.gnome.shell.extensions.display-configuration-switcher" path="/org/gnome/shell/extensions/display-configuration-switcher/">
+  <schema id="org.gnome.shell.extensions.display-configuration-switcher-hsantos92" path="/org/gnome/shell/extensions/display-configuration-switcher-hsantos92/">
     <key name="configs" type="a(sua(iiduba(ssa{sv}))a{sv}a(ssss))">
       <default>[]</default>
       <summary>List of all saved configurations.</summary>

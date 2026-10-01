@@ -14,9 +14,15 @@ menu or through the toggle/keyboard shortcuts. The upstream automatic restore
 of the last profile has been removed to avoid login flicker and unexpected
 orientation or scaling changes.
 
-Existing saved profiles remain available. This fork uses the same extension UUID
-as upstream, so installing it replaces the upstream copy. Updates from GNOME
-Extensions may replace this fork.
+This fork has its own UUID, `display-configuration-switcher@hsantos92.github.io`,
+and separate settings storage. Upstream updates cannot replace it.
+
+After installing, run `bash migrate-profiles.sh` to copy saved profiles and
+shortcut settings from upstream. The script backs up the original settings and
+refuses to overwrite existing fork settings. It does not apply a display profile.
+Disable the original extension before enabling **Display Configuration Switcher
+(Hector)** to avoid duplicate controls and shortcut conflicts. A logout/login may
+be needed for GNOME to discover the new extension.
 
 Upstream: https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension
 
