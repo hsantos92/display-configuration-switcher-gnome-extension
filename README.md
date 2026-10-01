@@ -1,4 +1,4 @@
-# Display Configuration Switcher (GNOME Extension)
+# Display Configuration Switcher (GNOME Extension) FORK
 
 <div>
     <img style="margin: 0px auto 0px; display: block;" src="./data/icon/com.gitlab.knokelmaat.display-configuration-switcher.svg" width="256" height="256"/>
