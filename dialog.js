@@ -42,7 +42,10 @@ class NameDialog extends ModalDialog.ModalDialog {
 
     _initContent() {
         const boxLayout = new St.BoxLayout();
-        boxLayout.set_vertical(true);
+        if ('orientation' in boxLayout)
+            boxLayout.orientation = Clutter.Orientation.VERTICAL;
+        else
+            boxLayout.vertical = true; // GNOME 46–47
 
         this._message = new St.Label();
         this._entry = new St.Entry();

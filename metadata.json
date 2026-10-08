@@ -7,9 +7,10 @@
         "47",
         "48",
         "49",
-        "50"
+        "50",
+        "51"
     ],
     "url": "https://github.com/hsantos92/display-configuration-switcher-gnome-extension",
     "settings-schema": "org.gnome.shell.extensions.display-configuration-switcher-hsantos92",
-    "version": 14
+    "version": 15
 }

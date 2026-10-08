@@ -27,7 +27,8 @@ be needed for GNOME to discover the new extension.
 Upstream: https://gitlab.com/knokelmaat/display-configuration-switcher-gnome-extension
 
 ## Validation
-Run `node --test tests/startup.test.cjs` and `bash build.sh -b`.
+Run `node --test tests/*.test.cjs` and `bash build.sh -b`.
+GNOME Shell 46–51 is supported; GNOME 48+ uses the orientation API.
 
 ## Installation
 To build and install the extension, run:
